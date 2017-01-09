@@ -1,0 +1,111 @@
+(function(angular){
+  "use strict";
+
+  angular.module('ngDataModel').provider('BaseModel', function() {
+    var inc_ids = 0;
+
+    function BaseModel() {}
+    BaseModel.primary_key = 'uuid';
+    BaseModel.track_modifications = true;
+    BaseModel.relation_handling = 'property';
+
+    // CLASS methods
+    BaseModel.build = function(attrs, validation_error_handler) {
+      if(attrs.__type) {
+        var __type = attrs.__type.replace(/::/g, '__');
+        if(__type != this.name && this.storage[__type])
+          return this.storage[__type].build(attrs, validation_error_handler);
+      }
+
+      attrs[this.primary_key] = attrs[this.primary_key] || 'tmp_' + inc_ids++;
+      var storage = (this.storage.objects[this.db_name || this.name] = this.storage.objects[this.db_name || this.name] || {});
+
+      var ob = storage[attrs[this.primary_key]];
+      if(!ob) {
+        ob = new this(attrs);
+        ob.$prepare_properties();
+        storage[attrs[this.primary_key]] = ob;
+      };
+      ob.init(attrs, validation_error_handler);
+      return ob;
+    }
+
+    BaseModel.build_all = function(attrs, validation_error_handler) {
+      var self = this;
+      return attrs.map(function(attributes){
+        return self.build(attributes, validation_error_handler);
+      })
+    }
+
+    BaseModel.concern = function() { var args = Array.from(arguments); args.shift().apply(this, args); return this; }
+
+    // INSTANCE methods
+    BaseModel.prototype.init = function(attrs, validation_error_handler) {
+      <% if Rails.env.development? %>
+      var self = this;
+      jQuery.each(attrs, function(attr, value) {
+        if(
+          self.constructor.enabled_attributes.indexOf(attr) == -1 &&
+          (self.constructor.real_attributes && self.constructor.real_attributes.indexOf(attr) == -1) &&
+          (self.constructor.has_many_definitions && self.constructor.has_many_definitions.map('name').indexOf(attr) == -1) &&
+          (self.constructor.has_one_definitions && self.constructor.has_one_definitions.map('name').indexOf(attr) == -1) &&
+          (self.constructor.belongs_to_definitions && self.constructor.belongs_to_definitions.map('name').indexOf(attr) == -1) &&
+          typeof(value) != 'function' &&
+          !attr.startsWith('$') &&
+          attr != 'class_name'
+        )
+          console.log('kezeletlen attributum', self.constructor.name, attr, value, self);
+      })
+      <% end %>
+      var self = this;
+      if(this.$before_init) this.$before_init.each(function(init) {init.call(self, attrs); })
+
+      if(validation_error_handler) this.add_validation_error_handler(validation_error_handler);
+
+      this.init_attributes(attrs);
+      this.build_relations(attrs, validation_error_handler);
+
+      if(this.$after_init) this.$after_init.each(function(init) {init.call(self); })
+
+      this.$reset_modification_tracker();
+    }
+
+    BaseModel.prototype.init_attributes = function(attrs) {
+      this.$set_ob_id(attrs);
+
+      var self = this;
+      this.$skip_watchers = true;
+      if(this.constructor.enabled_attributes)
+        this.constructor.enabled_attributes.each(function(k) { if(attrs.hasOwnProperty(k)) self[k] = attrs[k]; });
+      if(this.constructor.real_attributes)
+        this.constructor.real_attributes.each(function(k) { if(attrs.hasOwnProperty(k)) self[k] = attrs[k]; });
+      this.$skip_watchers = false;
+    }
+
+    BaseModel.prototype.build_relations = function(attrs, validation_error_handler) {
+      if(this.constructor.has_many_definitions)   this.build_has_many(attrs, validation_error_handler);
+      if(this.constructor.has_one_definitions)    this.build_has_one(attrs, validation_error_handler);
+      if(this.constructor.belongs_to_definitions) this.build_belongs_to(attrs);
+    }
+
+
+    BaseModel.prototype.$set_ob_id = function(attrs) {
+      Object.defineProperty(this, '$ob_id', {
+        value: this.constructor.name.underscore() + '---' + (this[this.constructor.primary_key] || attrs[this.constructor.primary_key])
+      });
+    }
+
+    BaseModel.prototype.$attr_id = function(attr) {
+      return this.$ob_id + '__' + attr
+    };
+
+    Object.defineProperty(BaseModel.prototype, 'persisted', {
+      get: function() {
+        return !/^tmp_.*/.exec(this[this.constructor.primary_key]) && !this._destroy;
+      }
+    })
+
+    this.BaseModel = BaseModel;
+    this.$get = function() { return BaseModel; }
+  });
+})(angular);

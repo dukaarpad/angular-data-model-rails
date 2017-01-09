@@ -1,0 +1,20 @@
+//= require jquery
+//= require i18n
+
+//= require sugar-full
+//= require angular
+//= require angular-rails-templates
+//= require angular-resource
+//= require angular-route
+
+//= require ngDataModel
+//= require_tree ./angular_data_model
+
+function devel_log() {
+<% if Rails.env.development? %>
+  if(console) {
+    console.log.apply(console, arguments);
+    //console.trace();
+  }
+<% end %>
+}

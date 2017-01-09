@@ -1,0 +1,42 @@
+________________________________________________________________________________________________________________________
+Az általános keret
+
+Példa:
+
+<div class="field-frame" label="Field:">
+  <div class="view">{{ob.field}}</div>
+  <div class="edit"><input ng-model="ob.field" class="form-control input-sm"></div>
+</div>
+
+Fontos, hogy előbb van a view, utána az edit.
+
+Ha csak input kell (pl. keresőben), akkor csak az edit-et kell kitölteni, pl:
+
+<div class="field-frame" label="Név">
+  <div class="edit"><input ng-model="filter.name" class="form-control input-sm"/></div>
+</div>
+
+________________________________________________________________________________________________________________________
+Fieldek
+
+Ezek olyan direktívák, amik model attributumok szerkesztésére vannak:
+
+Feladatuk:
+- megfelelő cimke kikeresése (I18n)
+- megfelelő input mező beállítása (input, select, checkbox, datepicker)
+- formázott érték megjelenítése olvasásra (-> behavior)
+- nézet szabályok érvényesítése (view-rules)
+- validációs hibák megjelenítése (validate -> errors)
+
+Input field:
+
+<div input-field="procedure.identifier"></div>
+
+Select field:
+
+<div select-field="lawsuit_details_record.section"></div>
+
+
+Általános field (magától "kitalálja" a szekesztési módot):
+
+<div edit-field="procedure.currency_uuid"></div>

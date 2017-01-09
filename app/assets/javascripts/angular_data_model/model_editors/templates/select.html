@@ -1,0 +1,12 @@
+<div class="field-frame" label="{{label || object.$t(attribute)}}" error="{{object.$get_errors(attribute)}}" ng-class="object.$get_view_rule(attribute, this.$parent)">
+  <div class="history-icon" ng-show="has_history"><span class="glyphicon glyphicon-time" ng-click="show_history(object, attribute)"></span></div>
+  <div class="view">{{object[read_attribute]}}&nbsp;</div>
+  <div class="edit">
+    <select
+      ng-attr-id="{{object.$attr_id(attribute)}}"
+      ng-model="object[attribute]"
+      class="form-control input-sm"
+      ng-options="item[behavior.identifier] as behavior.get_name(item, object) disable when behavior.is_disabled(item, object) for item in object['options_for_' + attribute]"
+      ><option></option></select>
+  </div>
+</div>

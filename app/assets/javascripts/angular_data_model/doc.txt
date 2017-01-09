@@ -1,0 +1,289 @@
+________________________________________________________________________________________________________________________
+Kapcsolatok
+
+A kapcsolatoknál meg lehet adni a kapcsolás feltételét (conditions), ebben az esetben nem a cachelt azonosítók alapján
+adja vissza az értéke(ke)t, hanem a feltétel alapján keres. Ha vannak kapcsolási feltételek meghatározva, ezeket
+felhasználja az új elekmek létrehozásánál is az inicializáláshoz.
+
+A kapcsolatok használatához alapértelmezetten függvényt hoz létre (this.messages(), this.comment(), this.parent()),
+ha a második paraméterként átadott hash-ben a mode-ot 'property'-re állítjuk, akkor property-t hoz létre, de mögötte
+ugyanaz a függvény fog meghívódni, mint az alapesetben.
+
+Példák:
+
+Procedure() {}
+Message() {}
+LawsuitDetailsRecord() {}
+Person() {}
+
+
+Procedure.has_many('messages') -> procedure.messages()
+Procedure.has_many('messages', { mode: 'property' }) -> procedure.messages
+Procedure.belongs_to('parent', { model: 'Procedure', conditions: { uuid: 'this.parent_uuid' }) -> procedure.parent()
+
+Procedure.has_many( 'own_parties', { model: 'Person',
+  conditions: {
+    personable_uuid: 'this.uuid',
+    personable_type: 'this.constructor.name',
+    legal_status: 7
+  }) -> procedure.own_parties() -> Person.where({ personable_uuid: this.uuid, personable_type: ...})
+Procedure.has_many('adverse_parties', { model: 'Person',
+  conditions: {
+    personable_uuid: 'this.uuid',
+    personable_type: 'this.constructor.name',
+    legal_status: 8
+  }) -> procedure.adverse_parties() -> ...
+
+Procedure.has_one('lawsuit_details_record') -> procedure.lawsuit_details_record()
+LawsuitDetailsRecord.belongs_to('procedure', { mode: 'property',
+  conditions: {
+    uuid: 'this.procedure_uuid'
+  }) -> lawsuit_details_record.procedure -> Procedure.where({uuid: this.procedure_uuid})
+
+Kapcsolatok megadásának alternatív lehetőségei:
+
+Procedure.has_many('obligors', 'Person')
+ugyanaz, mint
+Procedure.has_many('obligors', { model: 'Person' })
+(második paraméter -> model)
+
+Procedure.has_many('obligors', 'Person', { personable_uuid: 'this.uuid' })
+ugyanaz, mint
+Procedure.has_many('obligors', { model: 'Person', conditions: { personable_uuid: 'this.uuid' } })
+(harmadik paraméter -> conditions)
+
+Procedure.has_many('state_changes', { statable_uuid: 'this.uuid' })
+ugyanaz, mint
+Procedure.has_many('state_changes', { model: 'StateChange', conditions: { statable_uuid: 'this.uuid' } })
+(első paraméter -> model, második paraméter -> conditions)
+
+________________________________________________________________________________________________________________________
+Változáskövetés
+
+Ha a modelnek beállítjuk a track_modifications attribútumát true-ra(pl. Person.track_modifications = true;), az
+enabled_attributes tömb alapján inicializált értékek property-ként lesznek létrehozva, és lehetővé vállik a változás-
+figyelés ill. a változásra való triggerelés.
+Ilyen esetben létrejön az objektumban két hash, $original_attributes és $actual_attributes néven, értelemszerűen tárolva
+az attribútumok eredeti és aktuális értékeit. Ill. létrejön egy $changed property is (rekurzív függvényel a háttérben).
+
+A changed állapot resetelhető a $reset_modification_tracker függvény meghívásával (ez üríti a changed cache-t és az
+$original_attributes értékeit frissíti az $actual_attributes alapján).
+
+A változáskövetés bekapcsolása nem befojásolja az értékek használatát, pl. a
+
+<div>{{procedure.foreign_identifier}}</div>
+<input ng-model="procedure.foreign_identifier" />
+
+mindkét esetben egyformán működik.
+
+A változáskövetés bekapcsolása esetén létrejön egy this.$watchers hash is, aminek kulcsai az objektum attribútumai
+lehetnek, értékei pedig függvényeket tartalmazó tömbök. Egy adott attribútum változása esetén a hozzá tartozó függvények
+automatikusan meghívódnak, megkapva this-ként magát az objektumot, paraméterként pedig az új értéket.
+
+Pl. ha a procedure.foreign_identifier értéke változok, akkor ilyesmi fut le:
+procedure.$watchers['foreign_identifier'].each(function(fn){ fn.call(procedure, new_foreign_identifier) })
+
+________________________________________________________________________________________________________________________
+Validálás
+
+Példák:
+
+// elemi attributmok ellenőrzése gyári algoritmusokkal
+Procedure.validate({ attribute: 'foreign_identifier', rule: 'presence' })
+Person.validate({ attribute: 'legal_status', rule: 'inclusion', values: { 0: 'obligee', 1: 'obligor', ...}})
+Person.validate({ attribute: 'email', rule: 'email' })
+Person.validate({ attribute: 'phone', rule: 'phone' })
+Person.validate({ attribute: 'delegates', rule: 'array_not_empty' })
+
+// elemi értékek ellenőrzése saját algoritmussal (rule: custom)
+Message.validate({ attribute: 'subject', rule: 'custom',
+  checker: function() { return (this.subject || '').length > 3; },
+  msg: 'Tárgy túl rövid'})
+
+LawsuitDetailsRecord.validate({ attributes: [ 'amount_in_huf', 'amount_in_huf_not_evidence' ], rule: 'custom',
+  checker: function() { return this.amount_in_huf || this.amount_in_huf_not_evidence; },
+  msg: 'pert tárgy értéke vagy nem megállapíthatósága kötelező'
+})
+
+// kiterjesztett ellenőrzés (rule: 'global')
+Procedure.validate({ rule: 'global',
+  checker: function() { return this.foreign_identifier || this.lawsuit_details_record.party_info != 'alperes'; }
+  mark: function(valid) {
+    var msg = 'Alperes félként a bírósági ügyiratszám kötelező.';
+    this.$mark_validity(valid, 'foreign_identifier', msg);
+    this.lawsuit_details_record.$mark_validity(valid, 'party_info', msg);
+  }
+})
+
+// kiterjesztett ellenőrzés scope.$watch-al (rule: 'function')
+Procedure.validate({ rule: 'function',
+  checker: function(scope) {
+    var msg = 'Alperes félként a bírósági ügyiratszám kötelező.';
+    scope.$watchCollection('[procedure.foreign_identifier, procedure.lawsuit_details_record.party_info]', function(nv) {
+      var valid = nv[1] != 'alperes' || nv[0];
+      scope.procedure.$mark_validity(valid, 'foreign_identifier', msg);
+      scope.procedure.lawsuit_details_record.$mark_validity(valid, 'party_info', msg);
+    })
+  }
+})
+
+A validálások kiértékelése a változáskövetés bekapcsolásától függetlenül működik, azonban ha a változáskövetés be van
+kapcsolva, a gyári ellenőrzések (presence, mail stb.), az elemi saját algoritmusok (custom), ill. a 'global'
+kiterjesztett ellenőrzés jelentősen hatékonyabban működik. Ilyenkor nem angular-os scope.$watch-ok generálódnak, hanem
+a változáskövetés triggerei kerülnek kihasználásra.
+
+Ha a változáskövetés be van kapcsolva, a validáció ellenőrzések az első két csoportból automatikusan aktiválódnak, a
+harmadik eset validátorainak múködtetéséhez azonban továbbra is elengedhetetlen a this.$register_validators(scope)
+hívás a controller/template oldalról.
+
+Egyszerűsített validáció definíciók:
+
+.validate('attr') -> .validate({ attribute: 'attr', rule: 'presence' })
+.validate('attr', 'array_not_empty') -> .validate({ attribute: 'attr', rule: 'array_not_empty' })
+
+________________________________________________________________________________________________________________________
+ViewRules
+
+Példák:
+
+Procedure.add_view_rule('uuid', { edit: false, show: false })
+Procedure.add_view_rule('identifier', { edit: '!outsourced' })
+Procedure.add_view_rule('created_at', { edit: false })
+LawsuitDetailsRecord.add_view_rule('amount_in_huf', { edit: '!amount_in_huf_is_not_evidence' })
+LawsuitDetailsRecord.add_view_rule('amount_in_currency', {edit: function() { return this.procedure.currency != 'HUF' }})
+
+használat: instance1.$get_view_rule('attribute')
+
+A $get_view_rule( ) visszatérési értéke edit, show vagy hide lehet.
+Feldolgozás:
+* ha az 'edit'-nek megadott felétel igaz -> edit
+* ha 'edit' felétel nincs megadva vagy a 'show' feltétel igaz -> show
+* ha van feltétel megadva, de egyik sem igaz -> hide
+* ha egyik feltétel sincs megadva (.add_view_rule() nincs meghívva) -> edit
+
+A feltételek feldolgozása:
+* logikai érték esetén -> az érték
+* string esetén ilyen nevű attributumot vagy függvényt keres és annak az értékét adja vissza (! az elején negál)
+* függvény esetén a függvényt hívja meg az aktuális objektum példányon
+
+Alternatív definíciók (második paraméter -> edit szabály, harmadik paraméter -> show szabály):
+Procedure.add_view_rule('uuid', false, false) = ('uuid', { edit: false, show: false })
+Procedure.add_view_rule('created_at', false) = ('created_at', { edit: false, show: true })
+Procedure.add_view_rule('identifier', '!outsourced') = ('identifier', { edit: '!outsourced', show: true })
+LawsuitDetailsRecord.add_view_rule('amount_in_currency', function() { return this.procedure.currency != 'HUF' })
+ = ('amount_in_currency', { edit: function() { return this.procedure.currency != 'HUF' }, show: true })
+
+________________________________________________________________________________________________________________________
+Behavior (modell attributumok 'viselkedése')
+
+Lehetőség van arra, hogy a modellek egyes attributumaihoz meghatározzuk azok "típusát". Pl. dátum, checkbox, pénzösszeg.
+Ez az információ egyrészt az attributum szerkesztő nézetének felépítésénél használható (jbkInput), másrészt az
+attributum history-jának formázásához is támpontot adhat.
+
+Lehetséges viselkedések (jelenleg): select, date, datetime, amount, checkbox
+
+Példák beállításra:
+
+LawsuitDetailsRecord.behave('amount_in_huf', 'amount')
+ugyanaz, mint:
+LawsuitDetailsRecord.behave_as_amount('amount_in_huf')
+ugyanaz, mint:
+LawsuitDetailsRecord._amount('amount_in_huf')
+
+Procedure._datetime('created_at')
+LawsuitDetailsRecord._checkbox('amount_in_huf_is_not_evident')
+
+A referenciaként működő attributumok beállítása:
+
+Model.behave('attributum', 'select', settings) vagy Model._select('attributum', settings)
+
+settings = {
+  values: [], // pl [{id: 1, value: "I. fok"}, {id: 2, value: "II. fok"}, ...]
+  hash: {}, // pl { 1: {id: 1, value: "I. fok"}, 2: {id: 2, value: "II. fok"}, ... }
+  identifier: 'id', // opcionális
+  name: 'value' vagy fn(), // opcionális pl. function(){ return this.name + '-' + this.name2 }
+  filter: fn(), // opcionális pl. function(){ return this.internal_system_uuid == CURRENT_INTERNAL_SYSTEM }
+}
+
+Ha a values tömb elemeinél/objektumainál egyértelmű, hogy mi a kulcs és mi a név, ill. nincs szükség szűrésre,
+megadhatjuk közvetlenül második attributumként, pl.
+
+LawsuitDetailsRecord._select('section', [{id: 1, value: "I. fok"}, {id: 2, value: "II. fok"}, ...]).
+
+'values' (tömb) helyett adhatunk meg 'hash'-t is.
+
+A 'mi a kulcs és mi a név' egyértelműsége azt jelenti, hogy a kulcs 'id', 'uuid' vagy 'key', a név pedig 'value' vagy
+'name'. Kulcs => érték esetén hashként is megadható, pl.
+
+LawsuitDetailsRecord._select('section', {1: "I. fok", 2: "II. fok", ...}).
+
+Generált funkciók (a fenti példa esetén):
+
+lawsuit_details_record_instance.section = 1
+lawsuit_details_record_instance.formatted_section ~> 'I. fok'         // property
+lawsuit_details_record_instance.get_formatted_section() ~> 'I. fok'   // függvény
+lawsuit_details_record_instance.get_formatted_section(2) ~> 'II. fok' // függvény
+
+lawsuit_details_record_instance.options_for_section ~> [
+  { key: 1, value: 'I. fok', _key: 1, _value: 'I. fok' },
+  { key: 2, value: 'II. fok', _key: 2, _value: 'II. fok' }, ...
+]
+
+Az instance.options_for_attribute által visszaadott tömbbről tudni érdemes:
+* csak azok az elemek jelennek meg itt, amiket átenged a filter (ha meg van adva)
+
+Az instance.get_formatted_attribute függvényről:
+* a visszaadott név át van engedve a nevet esetlegesen megváltoztató függvényen
+* itt nincs érvényesítve a filter, vagyis olyan elem neve is visszajön, amit a values-ból a filter kiszürne
+
+A name és a filter függvény bemenetként megkapja paraméterül az objektum példányt is (a this az ellenőrzendő elem).
+
+A date, datetime és amount esetén is a formatted_attribute és get_formatted_attribute() porperty ill. függvény jön
+létre.
+
+Azt, hogy egy attributumnak van-e speciális viselkedés beállítva úgy lehet ellenőrizni, hogy szerepel-e kulcsként a
+Model.$behaviors hash-ben. Ha tényleg szerepel, az is innen deríthető ki, hogy milyen viselkedés van beállítva neki
+(ob.constructor.$behaviors[attribute].type ~> select/date/datetime/amount/checkbox).
+________________________________________________________________________________________________________________________
+Concerns
+
+Definiálhatunk olyan osztályokat (konstructor függvényeket factory-ban), amik arra jók, hogy meglévő modellek működését
+kiegészítsék. Ez a lehetőség a többszörös öröklést is helyettesíti részlegesen. Két esetben lehet erre szükség:
+1. bizonyos modeljeinket közös funkcionalitással akarjuk kiegészíteni, de nem mindegyiket (különbe a BaseModel-be
+tennénk), pl. paginációs adatokkal kiegészített keresés
+2. ha az appunkban származtatott objektumok a common részben is származtatva voltak szintén concern-ekkel adhatunk
+hozzuk közös funkcionalitást (pl. common.Procedure__Per -> common.Procedure, xApp.Procedure -> common.Procedure,
+xApp.Procedure__Per -> common.Procedure__Per származtatások esetén az xApp.Procedure__Per model nem tartalmazza az
+xApp.Procedure-ben definiált plusz dolgokat)
+
+Példa concern-re:
+
+angular.module('xApp').factory('xApp.concern.Procedure', function(){
+  return function() {
+    var Procedure = this;
+
+    Procedure
+      .validate(...)
+      .add_view_rule(...)
+  }
+})
+
+angular.module('xApp').factory('xApp.Procedure__Court__Per',
+  ['extend', 'common.Procedure__Court__Per', 'xApp.concern.Procedure',
+  function(extend, BaseModel, concernProcedure) {
+    extend(Procedure__Court__Per, BaseModel);
+
+    function Procedure__Court__Per() {}
+
+    Procedure__Court__Per
+      .has_many(...)
+      .has_one(...)
+      .belongs_to(...)
+
+      .concern(concernProcedure)
+
+    return Procedure__Court__Per;
+  }
+);
+
+A BaseModel.concern() hívás a plusz paraméterteket is továbbítja (pl. LawFirm.concern(Pagination, 'url')).
