@@ -1,5 +1,5 @@
 (function(){
-
+  "use strict";
 /*
  * Usage example:
  * <div ng-init="ob = { field: 'a'}"></div>

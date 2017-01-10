@@ -1,5 +1,5 @@
 (function(){
-
+  "use strict";
 /*
  * Usage example:
  * <div edit-field="ob.field"></div>

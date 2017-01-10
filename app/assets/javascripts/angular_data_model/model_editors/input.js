@@ -1,5 +1,5 @@
 (function(){
-
+  "use strict";
 /*
  * Usage example:
  * <div ng-init="ob = { field: 'a'}"></div>
@@ -12,7 +12,7 @@
       templateUrl: 'angular_data_model/model_editors/templates/input.html',
       scope: {},
       link: function(scope, element, attributes) {
-        helpers.parse_object_attribute(scope, attributes['inputField'])
+        helpers.parse_object_attribute(scope, attributes['inputField'], attributes);
       }
     }
   }]);

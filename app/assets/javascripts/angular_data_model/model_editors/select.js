@@ -1,5 +1,5 @@
 (function(){
-
+  "use strict";
 /*
  * Usage example:
  * <div select-field="ob.field"></div>
@@ -11,7 +11,7 @@
       templateUrl: 'angular_data_model/model_editors/templates/select.html',
       scope: {},
       link: function(scope, element, attributes) {
-        helpers.parse_object_attribute(scope, attributes['selectField'])
+        helpers.parse_object_attribute(scope, attributes['selectField'], attributes);
       }
     }
   }]);

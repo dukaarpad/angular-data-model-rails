@@ -1,5 +1,5 @@
 (function(){
-
+  "use strict";
 /*
  * Usage example:
  * <div ng-init="ob = { field: 'a'}"></div>
@@ -14,7 +14,7 @@
       compile: function() {
         return {
           pre: function preLink(scope, element, attributes) {
-            helpers.parse_object_attribute(scope, attributes['dateField'])
+            helpers.parse_object_attribute(scope, attributes['dateField'], attributes);
           }
         }
       },
