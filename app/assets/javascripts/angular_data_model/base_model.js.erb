@@ -7,7 +7,6 @@
     function BaseModel() {}
     BaseModel.primary_key = 'uuid';
     BaseModel.track_modifications = true;
-    BaseModel.relation_handling = 'property';
 
     // CLASS methods
     BaseModel.build = function(attrs, validation_error_handler) {
@@ -83,9 +82,10 @@
     }
 
     BaseModel.prototype.build_relations = function(attrs, validation_error_handler) {
-      if(this.constructor.has_many_definitions)   this.build_has_many(attrs, validation_error_handler);
-      if(this.constructor.has_one_definitions)    this.build_has_one(attrs, validation_error_handler);
-      if(this.constructor.belongs_to_definitions) this.build_belongs_to(attrs);
+      if(this.constructor.has_many_definitions)               this.build_has_many(attrs, validation_error_handler);
+      if(this.constructor.has_one_definitions)                this.build_has_one(attrs, validation_error_handler);
+      if(this.constructor.belongs_to_definitions)             this.build_belongs_to(attrs);
+      if(this.constructor.belongs_to_polymorphic_definitions) this.build_belongs_to_polymorphic(attrs);
     }
 
 

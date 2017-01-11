@@ -92,17 +92,13 @@
         return ob;
       }
 
-      if(rel.mode == 'property' || this.relation_handling == 'property') {
-        Object.defineProperty(this.prototype, rel.name, {
-          get: function() {
-            return this['get_' + rel.name]();
-          },
-          enumerable: true
-        });
-      }
-      else {
-        this.prototype[rel.name] = this.prototype['get_' + rel.name];
-      }
+      Object.defineProperty(this.prototype, rel.name, {
+        get: function() {
+          return this['get_' + rel.name]();
+        },
+        enumerable: true
+      });
+
       return this;
     }
 
@@ -150,17 +146,13 @@
         return ob;
       }
 
-      if(rel.mode == 'property' || this.relation_handling == 'property') {
-        Object.defineProperty(this.prototype, rel.name, {
-          get: function() {
-            return this['get_' + rel.name]();
-          },
-          enumerable: true
-        });
-      }
-      else {
-        this.prototype[rel.name] = this.prototype['get_' + rel.name];
-      }
+      Object.defineProperty(this.prototype, rel.name, {
+        get: function() {
+          return this['get_' + rel.name]();
+        },
+        enumerable: true
+      });
+
       return this;
     }
 
@@ -202,17 +194,13 @@
         return ob;
       }
 
-      if(rel.mode == 'property' || this.relation_handling == 'property') {
-        Object.defineProperty(this.prototype, rel.name, {
-          get: function() {
-            return this['get_' + rel.name]();
-          },
-          enumerable: true
-        });
-      }
-      else {
-        this.prototype[rel.name] = this.prototype['get_' + rel.name];
-      }
+      Object.defineProperty(this.prototype, rel.name, {
+        get: function() {
+          return this['get_' + rel.name]();
+        },
+        enumerable: true
+      });
+
       return this;
     }
 
@@ -229,6 +217,55 @@
       });
     }
 
+    // BELONGS_TO polymorphic
+
+    // CLASS methods
+    BaseModel.belongs_to_polymorphic = function(attribute, models, attribute_type, attribute_key) {
+      attribute_type = attribute_type || attribute + '_type';
+      attribute_key  = attribute_key  || attribute + '_' + this.primary_key;
+      this.belongs_to_polymorphic_definitions = this.belongs_to_polymorphic_definitions ? this.belongs_to_polymorphic_definitions.clone() : [];
+      this.belongs_to_polymorphic_definitions.push({attribute: attribute, models: models, attribute_type: attribute_type, attribute_key: attribute_key});
+
+      for(var i = 0; i < models.length; i++) {
+        var model = models[i];
+        var conditions = {};
+        conditions[this.primary_key] = 'this.' + attribute_key;
+        console.log('buidl has_one', model.underscore(), conditions)
+        this.belongs_to(model.underscore(), conditions);
+      }
+
+      Object.defineProperty(this.prototype, attribute, {
+        get: function() {
+          for(var i = 0; i < models.length; i++) {
+            var model = models[i];
+            if(this[attribute_type] == model)
+              return this[model.underscore()];
+          }
+          return null;
+        },
+        enumerable: true
+      })
+
+      return this;
+    }
+
+    // INSTANCE methods
+    BaseModel.prototype.build_belongs_to_polymorphic = function(attrs) {
+      var self = this;
+      this.constructor.belongs_to_polymorphic_definitions.each(function(relation) {
+        if(attrs[relation.attribute]) {
+          for(var i = 0; i < relation.models.length; i++) {
+            var model = relation.models[i];
+            if(attrs[relation.attribute_type] == model) {
+              var rel_ob = self['get_' + model.underscore()]();
+              if(rel_ob && rel_ob.$remove_unpersisted_from_storage) rel_ob.$remove_unpersisted_from_storage();
+              self['set_' + model.underscore()](attrs[relation.attribute]);
+            }
+          }
+        }
+      });
+    }
+
     BaseModel.finder = function() {
       var rel = parse_relation(arguments);
 
@@ -237,17 +274,12 @@
         return this.constructor.storage[rel.model].where(this.$parse_conditions(rel.conditions))
       }
 
-      if(rel.mode == 'property' || this.relation_handling == 'property') {
-        Object.defineProperty(this.prototype, rel.name, {
-          get: function() {
-            return this['get_' + rel.name]();
-          },
-          enumerable: true
-        });
-      }
-      else {
-        this.prototype[rel.name] = this.prototype['get_' + rel.name];
-      }
+      Object.defineProperty(this.prototype, rel.name, {
+        get: function() {
+          return this['get_' + rel.name]();
+        },
+        enumerable: true
+      });
 
       return this;
     }

@@ -19,7 +19,7 @@
     // CLASS methods
     BaseModel.$t = function(attr, count) {
       this.translations = this.translations || {};
-      var model = (this.model_name || this.name).underscore().replace(/__/g, '/');
+      var model = this.name.underscore().replace(/__/g, '/');
       this.translations[model] = this.translations[model] || {};
       if(!attr) {
         attr = model;

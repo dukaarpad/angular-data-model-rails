@@ -5,9 +5,7 @@ A kapcsolatoknál meg lehet adni a kapcsolás feltételét (conditions), ebben a
 adja vissza az értéke(ke)t, hanem a feltétel alapján keres. Ha vannak kapcsolási feltételek meghatározva, ezeket
 felhasználja az új elekmek létrehozásánál is az inicializáláshoz.
 
-A kapcsolatok használatához alapértelmezetten függvényt hoz létre (this.messages(), this.comment(), this.parent()),
-ha a második paraméterként átadott hash-ben a mode-ot 'property'-re állítjuk, akkor property-t hoz létre, de mögötte
-ugyanaz a függvény fog meghívódni, mint az alapesetben.
+A kapcsolatok használatához alapértelmezetten függvényt hoz létre (this.messages(), this.comment(), this.parent()).
 
 Példák:
 
@@ -18,7 +16,6 @@ Person() {}
 
 
 Procedure.has_many('messages') -> procedure.messages()
-Procedure.has_many('messages', { mode: 'property' }) -> procedure.messages
 Procedure.belongs_to('parent', { model: 'Procedure', conditions: { uuid: 'this.parent_uuid' }) -> procedure.parent()
 
 Procedure.has_many( 'own_parties', { model: 'Person',
@@ -35,10 +32,11 @@ Procedure.has_many('adverse_parties', { model: 'Person',
   }) -> procedure.adverse_parties() -> ...
 
 Procedure.has_one('lawsuit_details_record') -> procedure.lawsuit_details_record()
-LawsuitDetailsRecord.belongs_to('procedure', { mode: 'property',
+LawsuitDetailsRecord.belongs_to('procedure', {
   conditions: {
     uuid: 'this.procedure_uuid'
-  }) -> lawsuit_details_record.procedure -> Procedure.where({uuid: this.procedure_uuid})
+  }
+}) -> lawsuit_details_record.procedure -> Procedure.where({uuid: this.procedure_uuid})
 
 Kapcsolatok megadásának alternatív lehetőségei:
 
@@ -56,6 +54,8 @@ Procedure.has_many('state_changes', { statable_uuid: 'this.uuid' })
 ugyanaz, mint
 Procedure.has_many('state_changes', { model: 'StateChange', conditions: { statable_uuid: 'this.uuid' } })
 (első paraméter -> model, második paraméter -> conditions)
+
+Notice.belongs_to_polymorphic('subject', ['Message', 'StateChange', 'Cost'])
 
 ________________________________________________________________________________________________________________________
 Változáskövetés
