@@ -221,6 +221,7 @@
 
     // CLASS methods
     BaseModel.belongs_to_polymorphic = function(attribute, models, attribute_type, attribute_key) {
+      if(typeof(models) == 'string') models = [ models ];
       attribute_type = attribute_type || attribute + '_type';
       attribute_key  = attribute_key  || attribute + '_' + this.primary_key;
       this.belongs_to_polymorphic_definitions = this.belongs_to_polymorphic_definitions ? this.belongs_to_polymorphic_definitions.clone() : [];
@@ -238,7 +239,7 @@
         get: function() {
           for(var i = 0; i < models.length; i++) {
             var model = models[i];
-            if(this[attribute_type] == model)
+            if(this[attribute_type] && (this[attribute_type] == model || this[attribute_type].split('::')[0] == model))
               return this[model.underscore()];
           }
           return null;
