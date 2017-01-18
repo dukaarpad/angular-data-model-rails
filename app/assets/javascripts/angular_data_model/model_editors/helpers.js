@@ -25,8 +25,8 @@
         }
 
         scope.has_history =
-          object.followed_attributes &&
-          object.followed_attributes.indexOf(scope.attribute) != -1 &&
+          object.historyable_attributes &&
+          object.historyable_attributes.indexOf(scope.attribute) != -1 &&
           object.history_entries_for(scope.attribute).length > 0;
 
         scope.show_history = scope.$parent.show_history;
