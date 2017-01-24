@@ -35,7 +35,7 @@
 
       if(!rule.identifier) {
         if(!rule.values[0]) {
-          jbk_log_error('frontend select: hiányos értékkészlet (identifier): ' + attribute + ' settings: ' + JSON.stringify(settings) + ' rule: ' + JSON.stringify(rule));
+          devel_log('frontend select: hiányos értékkészlet (identifier): ' + attribute + ' settings: ' + JSON.stringify(settings) + ' rule: ' + JSON.stringify(rule));
           rule.identifier = 'id';
         } else {
           ['id', 'uuid', 'key'].each(function(prop) {
@@ -48,7 +48,7 @@
       }
       if(!rule.name) {
         if(!rule.values[0]) {
-          jbk_log_error('frontend select: hiányos értékkészlet (name): ' + attribute + ' settings: ' + JSON.stringify(settings) + ' rule: ' + JSON.stringify(rule));
+          devel_log('frontend select: hiányos értékkészlet (name): ' + attribute + ' settings: ' + JSON.stringify(settings) + ' rule: ' + JSON.stringify(rule));
           rule.name = 'name';
         } else {
           ['value', 'name'].each(function(prop) {
