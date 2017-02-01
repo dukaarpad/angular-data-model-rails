@@ -64,7 +64,7 @@
       this.init_attributes(attrs);
       this.build_relations(attrs, validation_error_handler);
 
-      if(this.$after_init) this.$after_init.each(function(init) {init.call(self); })
+      if(this.$after_init) this.$after_init.each(function(init) {init.call(self, self); })
 
       this.$reset_modification_tracker();
     }

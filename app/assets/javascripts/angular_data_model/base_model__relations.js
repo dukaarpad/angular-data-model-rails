@@ -231,7 +231,7 @@
         var model = models[i];
         var conditions = {};
         conditions[this.primary_key] = 'this.' + attribute_key;
-        console.log('buidl has_one', model.underscore(), conditions)
+        //console.log('buidl has_one', model.underscore(), conditions)
         this.belongs_to(model.underscore(), conditions);
       }
 

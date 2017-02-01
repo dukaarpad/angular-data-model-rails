@@ -148,11 +148,13 @@
       this.prototype.$before_init = this.prototype.$before_init ? this.prototype.$before_init.clone() : [];
       this.prototype.$before_init.push(fn);
     }
+    BaseModel.before_init = BaseModel.add_before_init;
 
     BaseModel.add_after_init = function(fn) {
       this.prototype.$after_init = this.prototype.$after_init ? this.prototype.$after_init.clone() : [];
       this.prototype.$after_init.push(fn);
     }
+    BaseModel.after_init = BaseModel.add_after_init;
 
     BaseModel.add_watcher = function(attribute, fn) {
       this.prototype.$watchers = this.prototype.$watchers ? jQuery.extend({}, this.prototype.$watchers) : {};
