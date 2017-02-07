@@ -72,7 +72,7 @@
       this.has_many_definitions = this.has_many_definitions ? this.has_many_definitions.clone() : [];
       this.has_many_definitions.push(rel);
 
-      var ids = rel.name.singularize() + '_ids';
+      var ids = rel.name.singularize() + '_has_many_ids';
       this.real_attributes = this.real_attributes ? this.real_attributes.clone() : [];
       this.real_attributes.push(ids);
 
@@ -125,7 +125,7 @@
       this.has_one_definitions = this.has_one_definitions ? this.has_one_definitions.clone() : [];
       this.has_one_definitions.push(rel);
 
-      var id = rel.name + '_id';
+      var id = rel.name + '_has_one_id';
       this.real_attributes = this.real_attributes ? this.real_attributes.clone() : [];
       this.real_attributes.push(id);
 
@@ -177,7 +177,7 @@
       this.belongs_to_definitions = this.belongs_to_definitions ? this.belongs_to_definitions.clone() : [];
       this.belongs_to_definitions.push(rel);
 
-      var id = rel.name + '_id';
+      var id = rel.name + '_belongs_to_id';
       this.real_attributes = this.real_attributes ? this.real_attributes.clone() : [];
       this.real_attributes.push(id);
 
