@@ -9,7 +9,7 @@
 
         var object = scope.$parent;
         parts.each(function(part) { object = object[part]; })
-        if(!object) console.log('no object found for', parts, 'in scope', scope, 'object: ', object, Object.keys(scope));
+        if(!object) devel_log('no object found for', parts, 'in scope', scope, 'object: ', object, Object.keys(scope));
 
         scope.object_name = parts.last();
         scope[scope.object_name] = object;

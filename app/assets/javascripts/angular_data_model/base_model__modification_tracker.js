@@ -87,7 +87,7 @@
           if(!self.$change_chache[self.$attr_id(attribute)].name.startsWith('[missing'))
             result.push(self.$change_chache[self.$attr_id(attribute)]);
           else
-            console.log('nem listázott módosítás: ', self.$change_chache[self.$attr_id(attribute)]);
+            devel_log('nem listázott módosítás: ', self.$change_chache[self.$attr_id(attribute)]);
         })
 
         if(self.constructor.has_many_definitions) self.constructor.has_many_definitions.each(function(rel) {

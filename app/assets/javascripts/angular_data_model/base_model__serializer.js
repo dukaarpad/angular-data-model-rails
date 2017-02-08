@@ -14,7 +14,7 @@
         tree.includes = tree.includes || {};
         if(this.has_many_definitions) this.has_many_definitions.each(function(rel) {
           if(!rel.skip_json) {
-            if(!self.storage[rel.model]) console.log('no rel model for', rel);
+            if(!self.storage[rel.model]) devel_log('no rel model for', rel);
             tree.includes[rel.name] = true;
           }
         })
@@ -56,7 +56,7 @@
            self.constructor.has_many_definitions.find(function(e){ return e.name == relation; }))
           relateds.each(function(i){
             if(i) result[relation + '_attributes'].push(i.as_json(full_recursive || attributes))
-            else console.log('no serializable related object', relation, self);
+            else devel_log('no serializable related object', relation, self);
           });
         else if(relateds &&
                 self.constructor.has_one_definitions &&

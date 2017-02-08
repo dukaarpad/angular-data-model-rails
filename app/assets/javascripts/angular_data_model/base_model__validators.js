@@ -93,7 +93,7 @@
     }
 
     BaseModel.prototype.$register_validators = function(scope, obj_name) {
-      if(console) console.log('$register_validators is deprecated', this);
+      devel_log('$register_validators is deprecated', this);
       if(!this.constructor.scope_validators && !this.constructor.global_validators) return;
       var self = this;
       self.$errors = self.$errors || {};

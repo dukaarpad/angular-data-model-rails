@@ -53,7 +53,7 @@
           !attr.startsWith('$') &&
           attr != 'class_name'
         )
-          console.log('kezeletlen attributum', self.constructor.name, attr, value, self);
+          devel_log('kezeletlen attributum', self.constructor.name, attr, value, self);
       })
       <% end %>
       var self = this;
