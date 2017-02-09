@@ -38,7 +38,7 @@
           amount.prepare_behavior.call(this, attribute, settings.precision);
           break;
         case 'checkbox':
-          checkbox.prepare_behavior.call(this, attribute);
+          checkbox.prepare_behavior.call(this, attribute, settings);
           break;
       }
 

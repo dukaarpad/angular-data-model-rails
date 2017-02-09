@@ -17,9 +17,7 @@
         scope.attribute = attribute;
 
         scope.read_attribute = attribute;
-        if(object.constructor.$behaviors
-            && object.constructor.$behaviors[attribute]
-            && ['select', 'date', 'datetime', 'amount'].indexOf(object.constructor.$behaviors[attribute].type) > -1) {
+        if(object.constructor.$behaviors && object.constructor.$behaviors[attribute]) {
           scope.read_attribute = 'formatted_' + attribute;
           scope.behavior = object.constructor.$behaviors[attribute];
         }

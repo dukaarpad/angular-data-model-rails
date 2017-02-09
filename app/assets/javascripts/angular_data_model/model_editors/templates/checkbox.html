@@ -1,6 +1,7 @@
 <div class="field-frame" label="{{label || object.$t(attribute)}}" error="{{object.$get_errors(attribute)}}" ng-class="object.$get_view_rule(attribute, this.$parent)">
   <div class="history-icon" ng-show="has_history"><span class="glyphicon glyphicon-time" ng-click="show_history(object, attribute)"></span></div>
-  <div class="view">
-    <input ng-attr-id="{{object.$attr_id(attribute)}}" ng-model="object[attribute]" type="checkbox" ng-disabled="object.$get_view_rule(attribute, this.$parent) != 'edit'"/>
+  <div class="view" ng-show="object.$get_view_rule(attribute, this.$parent) == 'show'">{{object[read_attribute]}}&nbsp;</div>
+  <div class="view" ng-show="object.$get_view_rule(attribute, this.$parent) == 'edit'">
+    <input ng-attr-id="{{object.$attr_id(attribute)}}" ng-model="object[attribute]" type="checkbox"/>
   </div>
 </div>
