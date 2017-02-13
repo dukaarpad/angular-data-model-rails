@@ -2,6 +2,6 @@
   <div class="history-icon" ng-show="has_history"><span class="glyphicon glyphicon-time" ng-click="show_history(object, attribute)"></span></div>
   <div class="view">{{object[read_attribute]}}&nbsp;</div>
   <div class="edit">
-    <ngdm-datepick ng-attr-id="{{object.$attr_id(attribute)}}" model="object" ng-attr-key="{{attribute}}" no-limit="true"></ngdm-datepick2>
+    <ngdm-datepick ng-attr-id="{{object.$attr_id(attribute)}}" model="object" key="attribute" no-limit="no_limit" start-date-attr="start_date_attr" end-date-attr="end_date_attr" from-now="from_now" allow-clear="allow_clear"></ngdm-datepick2>
   </div>
 </div>
