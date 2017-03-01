@@ -40,36 +40,44 @@
 
       Object.defineProperty(this, '$changed', {
         get: function() {
-          if(self._destroy) return false;
-          if(self.$changed_attributes.length > 0) return true;
+          return self.$is_changed();
+        }
+      });
 
-          var changed = false;
+      this.$is_changed = function(cache) {
+        cache = cache || [];
+        if(cache.indexOf(self.$attr_id()) != -1) return false;
+        cache.push(self.$attr_id());
 
-          // has_many
-          if(self.constructor.has_many_definitions) self.constructor.has_many_definitions.each(function(rel) {
-            self['get_' + rel.name]().each(function(object){
-              if(object.$changed) {
-                changed = true;
-                return false; // -> break
-              }
-            })
-            if(changed) return false; // -> break
-          });
-          if(changed) return true;
+        if(self._destroy) return false;
+        if(self.$changed_attributes.length > 0) return true;
 
-          // has_one
-          if(self.constructor.has_one_definitions) self.constructor.has_one_definitions.each(function(rel) {
-            var ob = self['get_' + rel.name]();
-            if(ob && ob.$changed) {
+        var changed = false;
+
+        // has_many
+        if(self.constructor.has_many_definitions) self.constructor.has_many_definitions.each(function(rel) {
+          self['get_' + rel.name]().each(function(object){
+            if(object.$is_changed(cache)) {
               changed = true;
               return false; // -> break
             }
-          });
-          if(changed) return true;
+          })
+          if(changed) return false; // -> break
+        });
+        if(changed) return true;
 
-          return false;
-        }
-      });
+        // has_one
+        if(self.constructor.has_one_definitions) self.constructor.has_one_definitions.each(function(rel) {
+          var ob = self['get_' + rel.name]();
+          if(ob && ob.$is_changed(cache)) {
+            changed = true;
+            return false; // -> break
+          }
+        });
+        if(changed) return true;
+
+        return false;
+      }
 
       this.$get_changed_values = function() {
         if(this._destroy) return [];

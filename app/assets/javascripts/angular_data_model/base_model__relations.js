@@ -221,6 +221,7 @@
 
     // CLASS methods
     BaseModel.belongs_to_polymorphic = function(attribute, models, attribute_type, attribute_key) {
+      models = models || [];
       if(typeof(models) == 'string') models = [ models ];
       attribute_type = attribute_type || attribute + '_type';
       attribute_key  = attribute_key  || attribute + '_' + this.primary_key;
@@ -242,7 +243,19 @@
             if(this[attribute_type] && (this[attribute_type] == model || this[attribute_type].split('::')[0] == model))
               return this[model.underscore()];
           }
-          return null;
+          // heuristic:
+          if(this[attribute_type]) {
+            var rel_class_name = this[attribute_type].replace(/::/g, '__');
+            if(this.constructor.storage[rel_class_name]) {
+              return this.constructor.storage[rel_class_name].find(this[attribute_key]);
+            } else {
+              devel_log('no model found in storage', rel_class_name, this);
+              return null;
+            }
+          } else {
+            devel_log('no statable relation info', this);
+            return null;
+          }
         },
         enumerable: true
       })
