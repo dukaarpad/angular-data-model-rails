@@ -57,7 +57,7 @@
         // has_many
         if(self.constructor.has_many_definitions) self.constructor.has_many_definitions.each(function(rel) {
           self['get_' + rel.name]().each(function(object){
-            if(object.$is_changed(cache)) {
+            if(object.$is_changed && object.$is_changed(cache)) {
               changed = true;
               return false; // -> break
             }
@@ -69,7 +69,7 @@
         // has_one
         if(self.constructor.has_one_definitions) self.constructor.has_one_definitions.each(function(rel) {
           var ob = self['get_' + rel.name]();
-          if(ob && ob.$is_changed(cache)) {
+          if(ob && ob.$is_changed && ob.$is_changed(cache)) {
             changed = true;
             return false; // -> break
           }
