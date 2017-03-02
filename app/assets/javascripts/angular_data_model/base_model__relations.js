@@ -311,6 +311,18 @@
       this.$remove_from_storage();
     }
 
+    BaseModel.prototype.$destroy = function() {
+      var self = this;
+      self._destroy = 1;
+      if(self.constructor.has_many_definitions) self.constructor.has_many_definitions.each(function(rel) {
+        self['get_' + rel.name]().each(function(ch) { if(ch.$remove) ch.$destroy(); })
+      })
+      if(self.constructor.has_one_definitions) self.constructor.has_one_definitions.each(function(rel) {
+        var ho = self['get_' + rel.name]();
+        if(ho && ho.$remove) ho.$destroy();
+      });
+    }
+
     BaseModel.prototype.$remove_from_storage = function() {
       devel_log('remove', this);
       delete(this.constructor.storage.objects[this.constructor.db_name || this.constructor.name][this[this.constructor.primary_key]]);
