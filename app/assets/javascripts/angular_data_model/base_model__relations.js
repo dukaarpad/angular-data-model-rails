@@ -70,6 +70,7 @@
     BaseModel.has_many = function() {
       var rel = parse_relation(arguments, true);
       this.has_many_definitions = this.has_many_definitions ? this.has_many_definitions.clone() : [];
+      this.has_many_definitions.remove(function(rule) { return rule.name == rel.name; });
       this.has_many_definitions.push(rel);
 
       var ids = rel.name.singularize() + '_has_many_ids';
@@ -123,6 +124,7 @@
     BaseModel.has_one = function() {
       var rel = parse_relation(arguments);
       this.has_one_definitions = this.has_one_definitions ? this.has_one_definitions.clone() : [];
+      this.has_one_definitions.remove(function(rule) { return rule.name == rel.name; });
       this.has_one_definitions.push(rel);
 
       var id = rel.name + '_has_one_id';
@@ -175,6 +177,7 @@
     BaseModel.belongs_to = function() {
       var rel = parse_relation(arguments);
       this.belongs_to_definitions = this.belongs_to_definitions ? this.belongs_to_definitions.clone() : [];
+      this.belongs_to_definitions.remove(function(rule) { return rule.name == rel.name; });
       this.belongs_to_definitions.push(rel);
 
       var id = rel.name + '_belongs_to_id';
@@ -226,6 +229,7 @@
       attribute_type = attribute_type || attribute + '_type';
       attribute_key  = attribute_key  || attribute + '_' + this.primary_key;
       this.belongs_to_polymorphic_definitions = this.belongs_to_polymorphic_definitions ? this.belongs_to_polymorphic_definitions.clone() : [];
+      this.belongs_to_polymorphic_definitions.remove(function(rule) { return rule.attribute == attribute; });
       this.belongs_to_polymorphic_definitions.push({attribute: attribute, models: models, attribute_type: attribute_type, attribute_key: attribute_key});
 
       for(var i = 0; i < models.length; i++) {
