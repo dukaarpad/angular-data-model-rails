@@ -123,7 +123,7 @@
     BaseModel.prototype.$get_errors = function(attribute) {
       return this.$errors ? (this.$errors[attribute] || []).map(function(e){ return e.msg; }).join(', ') : '';
     }
-    BaseModel.prototype.$invalid = function() {
+    BaseModel.prototype.$invalid = function(just_this) {
       var result = false;
 
       if(this.$errors) Object.values(this.$errors).each(function(errors){
@@ -133,6 +133,7 @@
         }
       });
       if(result) return true;
+      if(just_this) return false;
 
       if(this.$validation_error_handlers) this.$validation_error_handlers.each(function(handler) {
         if(Object.keys(handler.errors).length > 0) {
