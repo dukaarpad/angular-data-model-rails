@@ -161,6 +161,7 @@
       switch(rule.rule) {
         case 'array_not_empty':
         case 'presence':
+        case 'amount':
           rule.msg = rule.msg || model.$t(rule.attribute) + ' megadása kötelező';
           break;
         case 'email':

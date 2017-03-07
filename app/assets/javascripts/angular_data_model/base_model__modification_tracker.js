@@ -170,6 +170,7 @@
       this.prototype.$watchers = this.prototype.$watchers ? jQuery.extend({}, this.prototype.$watchers) : {};
       this.prototype.$watchers[attribute] = this.prototype.$watchers[attribute] ? this.prototype.$watchers[attribute].clone() : [];
       this.prototype.$watchers[attribute].push(fn);
+      return this;
     }
 
   }]);
