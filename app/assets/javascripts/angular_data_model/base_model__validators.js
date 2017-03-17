@@ -168,6 +168,7 @@
         case 'phone':
         case 'nyufig':
         case 'tax_number':
+        case 'registration_number':
         case 'bank_account':
           rule.msg = rule.msg || model.$t(rule.attribute) + ' hibás formátumú';
           break;
@@ -218,6 +219,11 @@
         case 'tax_number':
           rule.checker = rule.checker || function() {
             return (typeof(this[rule.attribute]) != 'string') || (this[rule.attribute].length == 0) || validateTaxNumber(this[rule.attribute]);
+          }
+          break;
+        case 'registration_number':
+          rule.checker = rule.checker || function() {
+            return (typeof(this[rule.attribute]) != 'string') || (this[rule.attribute].length == 0) || validateRegistrationNumber(this[rule.attribute]);
           }
           break;
         case 'inclusion':
@@ -271,9 +277,14 @@
     }
 
     function validateTaxNumber(str) {
-      var re = /\d{8}-\d-\d{2}/;
-			return re.test(str);
-		}
+      var re = /^\d{8}-\d-\d{2}$/;
+      return re.test(str);
+    }
+
+    function validateRegistrationNumber(str) {
+      var re = /^\d{2}\-\d{2}-\d{6}$/;
+      return re.test(str);
+    }
 
   }]);
 

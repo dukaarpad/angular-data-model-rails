@@ -2,6 +2,6 @@
   <div class="history-icon" ng-show="has_history"><span class="glyphicon glyphicon-time" ng-click="show_history(object, attribute)"></span></div>
   <div class="view">{{object[read_attribute]}}&nbsp;</div>
   <div class="edit">
-    <input ng-attr-id="{{object.$attr_id(attribute)}}" ng-model="object[attribute]" ng-model-options="{ debounce: 750 }" class="form-control input-sm" ng-class="{'account-number': object.$validated_as(attribute, 'bank_account'), 'nyufig': object.$validated_as(attribute, 'nyufig'), 'tax-number': object.$validated_as(attribute, 'tax_number')}"/>
+    <input ng-attr-id="{{object.$attr_id(attribute)}}" ng-model="object[attribute]" ng-model-options="{ debounce: 750 }" class="form-control input-sm" ng-class="{'account-number': object.$validated_as(attribute, 'bank_account'), 'nyufig': object.$validated_as(attribute, 'nyufig'), 'tax-number': object.$validated_as(attribute, 'tax_number'), 'registration-number': object.$validated_as(attribute, 'registration_number')}"/>
   </div>
 </div>
