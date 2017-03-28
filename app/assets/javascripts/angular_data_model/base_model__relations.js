@@ -257,7 +257,7 @@
               return null;
             }
           } else {
-            devel_log('no statable relation info', this);
+            devel_log('no ' + attribute + ' relation info', this);
             return null;
           }
         },
