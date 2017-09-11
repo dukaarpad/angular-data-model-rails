@@ -24,7 +24,7 @@
       Model.prototype.$watchers[attribute] = Model.prototype.$watchers[attribute] ? Model.prototype.$watchers[attribute].clone() : [];
       Model.prototype.$watchers[attribute].push(function(){
         if(this[attribute] == null) return;
-        var fixed = + parseFloat((this[attribute] || '0').replace(',', '.')).toFixed(this[attribute + '_precision'] || precision);
+        var fixed = + parseFloat(('' + (this[attribute] || '0')).replace(',', '.')).toFixed(this[attribute + '_precision'] || precision);
         if(this[attribute] !== fixed) this[attribute] = fixed;
       })
     }
